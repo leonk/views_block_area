@@ -1,0 +1,4 @@
+services:
+  views_block_area.manager:
+    class: Drupal\views_block_area\ViewsBlockAreaManager
+    arguments: ['@plugin.manager.block']

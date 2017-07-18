@@ -7,6 +7,7 @@
 
 namespace Drupal\views_block_area\Plugin\views\area;
 
+use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\area\AreaPluginBase;
 
@@ -37,9 +38,9 @@ class ViewsBlockArea extends AreaPluginBase {
     parent::buildOptionsForm($form, $form_state);
 
     $options = [];
-    /** @var \Drupal\block_field\BlockFieldManagerInterface $block_field_manager */
-    $block_field_manager = \Drupal::service('block_field.manager');
-    $definitions = $block_field_manager->getBlockDefinitions();
+    /** @var \Drupal\views_block_area\ViewsBlockAreaManagerInterface $views_block_area_manager */
+    $views_block_area_manager = \Drupal::service('views_block_area.manager');
+    $definitions = $views_block_area_manager->getBlockDefinitions();
     foreach ($definitions as $id => $definition) {
       // If allowed plugin ids are set then check that this block should be
       // included.
