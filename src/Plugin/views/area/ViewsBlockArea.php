@@ -9,6 +9,8 @@ namespace Drupal\views_block_area\Plugin\views\area;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\area\AreaPluginBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Block\BlockManagerInterface;
 
 /**
  * Provides an area handler which renders a block entity in a certain view mode.
@@ -18,6 +20,28 @@ use Drupal\views\Plugin\views\area\AreaPluginBase;
  * @ViewsArea("views_block_area")
  */
 class ViewsBlockArea extends AreaPluginBase {
+
+  /**
+   * The block plugin manager.
+   *
+   * @var \Drupal\Core\Block\BlockManagerInterface
+   */
+  protected $blockManager;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static($configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.block'));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, BlockManagerInterface $block_manager) {
+    $this->blockManager = $block_manager;
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  }
 
   /**
    * {@inheritdoc}
@@ -38,8 +62,7 @@ class ViewsBlockArea extends AreaPluginBase {
 
     $options = [];
     /** @var \Drupal\block_field\BlockFieldManagerInterface $block_field_manager */
-    $block_field_manager = \Drupal::service('block_field.manager');
-    $definitions = $block_field_manager->getBlockDefinitions();
+    $definitions = $this->getBlockDefinitions();
     foreach ($definitions as $id => $definition) {
       // If allowed plugin ids are set then check that this block should be
       // included.
@@ -54,6 +77,29 @@ class ViewsBlockArea extends AreaPluginBase {
       '#empty_option' => $this->t('Please select'),
       '#default_value' => $this->options['block_id'],
     ];
+  }
+
+  /**
+   * Get sorted listed of supported block definitions.
+   *
+   * @return array
+   *   An associative array of supported block definitions.
+   */
+  protected function getBlockDefinitions() {
+    $definitions = $this->blockManager->getSortedDefinitions();
+    $block_definitions = [];
+    foreach ($definitions as $plugin_id => $definition) {
+      // Context aware plugins are not currently supported.
+      // Core and component plugins can be context-aware
+      // https://www.drupal.org/node/1938688
+      // @see \Drupal\ctools\Plugin\Block\EntityView
+      if (isset($definition['context'])) {
+        continue;
+      }
+
+      $block_definitions[$plugin_id] = $definition;
+    }
+    return $block_definitions;
   }
 
   /**
