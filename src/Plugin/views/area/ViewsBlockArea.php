@@ -61,7 +61,6 @@ class ViewsBlockArea extends AreaPluginBase {
     parent::buildOptionsForm($form, $form_state);
 
     $options = [];
-    /** @var \Drupal\block_field\BlockFieldManagerInterface $block_field_manager */
     $definitions = $this->getBlockDefinitions();
     foreach ($definitions as $id => $definition) {
       // If allowed plugin ids are set then check that this block should be
@@ -107,7 +106,6 @@ class ViewsBlockArea extends AreaPluginBase {
    */
   public function render($empty = FALSE) {
     $element = [];
-    /** @var \Drupal\block_field\BlockFieldItemInterface $item */
     $block_instance = $this->getBlock();
     // Make sure the block exists and is accessible.
     if (!$block_instance || !$block_instance->access(\Drupal::currentUser())) {
@@ -133,7 +131,7 @@ class ViewsBlockArea extends AreaPluginBase {
   }
 
   /**
-   * {@inheritdoc}
+   * @return \Drupal\Core\Block\BlockPluginInterface
    */
   protected function getBlock() {
     if (empty($this->options['block_id'])) {
